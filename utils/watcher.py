@@ -87,7 +87,7 @@ def start_watcher(path: str, db, embeddings, db_lock: RLock) -> None:
     try:
         observer.schedule(handler, path, recursive=True)
         observer.start()
-        logger.info(f"File watcher active, watching for changes...")
+        logger.info("File watcher active, watching for changes...")
 
         # Run indefinitely until KeyboardInterrupt
         while True:

@@ -41,7 +41,7 @@ def ollama_chat(prompt: str, system: str | None = None, model: str | None = None
         # Check for HTTP errors
         try:
             resp.raise_for_status()
-        except requests.HTTPError as e:
+        except requests.HTTPError:
             logger.error(f"Ollama HTTP error: {resp.status_code}")
             if resp.status_code == 404:
                 return f"[Model not found: {model}. Did you pull it? (ollama pull {model})]"

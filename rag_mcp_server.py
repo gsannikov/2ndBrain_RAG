@@ -10,7 +10,7 @@ from utils.loader import load_documents
 from utils.embedder import upsert_documents, reset_index
 from utils.watcher import start_watcher
 from utils.llm import ollama_chat
-from utils.cache import get_cache, clear_cache, get_cache_stats, cached_search
+from utils.cache import clear_cache, get_cache_stats
 from utils.ratelimit import RateLimitMiddleware
 
 # Setup logging
@@ -47,7 +47,7 @@ class ChatRequest(BaseModel):
 def verify_api_key(x_api_key: str | None = Header(None)) -> None:
     """Optional API key verification if RAG_API_KEY is set."""
     if API_KEY and x_api_key != API_KEY:
-        logger.warning(f"Unauthorized access attempt")
+        logger.warning("Unauthorized access attempt")
         raise HTTPException(status_code=403, detail="Invalid API key")
     return None
 

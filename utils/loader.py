@@ -129,7 +129,7 @@ def load_documents(path: str):
             docs.extend(chunks)
             logger.debug(f"Extracted {len(chunks)} chunks from {fp}")
 
-        except TypeError as e:
+        except TypeError:
             logger.debug(f"Format not supported by Unstructured: {fp}")
             skip_count += 1
         except Exception as e:

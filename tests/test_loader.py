@@ -1,7 +1,6 @@
 """Unit tests for document loading and chunking."""
 
 import os
-import tempfile
 import pytest
 from utils.loader import load_documents, _iter_files, _is_path_safe, SUPPORTED_EXTS
 

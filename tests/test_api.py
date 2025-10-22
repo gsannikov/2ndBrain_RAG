@@ -2,9 +2,8 @@
 
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 import os
-import sys
 
 # Mock environment variables before importing the app
 os.environ["RAG_FOLDER"] = "/tmp/test_rag"
