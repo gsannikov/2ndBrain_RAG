@@ -11,6 +11,8 @@
     from utils.embedder import upsert_documents, reset_index
     from utils.watcher import start_watcher
     from utils.llm import ollama_chat
+    from utils.cache import get_cache, clear_cache, get_cache_stats, cached_search
+    from utils.ratelimit import RateLimitMiddleware
 
     # Setup logging
     logging.basicConfig(
@@ -20,6 +22,16 @@
     logger = logging.getLogger(__name__)
 
     app = FastAPI(title="2ndBrain_RAG MCP Server (with Ollama)")
+
+    # Add rate limiting middleware
+    RATE_LIMIT_ENABLED = os.getenv("RATE_LIMIT_ENABLED", "true").lower() == "true"
+    RATE_LIMIT_PER_MINUTE = int(os.getenv("RATE_LIMIT_PER_MINUTE", "60"))
+
+    if RATE_LIMIT_ENABLED:
+        app.add_middleware(RateLimitMiddleware, requests_per_minute=RATE_LIMIT_PER_MINUTE)
+        logger.info(f"Rate limiting enabled: {RATE_LIMIT_PER_MINUTE} req/min")
+    else:
+        logger.info("Rate limiting disabled")
 
     # Configuration
     API_KEY = os.getenv("RAG_API_KEY", None)  # Optional API key for authentication
@@ -91,6 +103,9 @@
                 if full_rebuild:
                     logger.info("Clearing existing index")
                     reset_index(db)
+                    # Clear search cache when reindexing
+                    clear_cache()
+                    logger.info("Cache cleared due to full rebuild")
 
                 logger.info("Loading documents from RAG folder")
                 docs = load_documents(RAG_PATH)
@@ -102,6 +117,10 @@
                 logger.info(f"Upserting {len(docs)} document chunks")
                 n = upsert_documents(db, docs)
                 logger.info(f"Ingest complete: {n} chunks indexed")
+
+                # Clear cache on any ingest (documents changed)
+                clear_cache()
+                logger.info("Cache cleared after ingest")
 
             return {"status": "ok", "indexed_chunks": n, "source_path": RAG_PATH}
         except Exception as e:
@@ -140,6 +159,20 @@
         except Exception as e:
             logger.error(f"Search error: {e}")
             raise HTTPException(status_code=500, detail="Search failed")
+
+    @app.get("/cache-stats")
+    def cache_stats(api_key: None = Depends(verify_api_key)):
+        """Get cache performance statistics."""
+        logger.info("Cache stats requested")
+        try:
+            stats = get_cache_stats()
+            return {
+                "cache": stats,
+                "message": "Cache statistics"
+            }
+        except Exception as e:
+            logger.error(f"Error getting cache stats: {e}")
+            raise HTTPException(status_code=500, detail="Failed to get cache stats")
 
     @app.post("/chat")
     def chat(req: ChatRequest, api_key: None = Depends(verify_api_key)):
