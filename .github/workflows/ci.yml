@@ -1,0 +1,43 @@
+
+name: CI
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+jobs:
+  test:
+    name: Python ${{ matrix.python-version }} • lint & smoke
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt || true
+          pip install ruff
+      - name: Lint
+        run: ruff check --output-format=github .
+      - name: Smoke test
+        run: |
+          python - << 'PY'
+          import compileall, sys
+          import importlib
+          importlib.import_module("rag_mcp_server")
+          ok = compileall.compile_dir('.', force=True, quiet=1)
+          sys.exit(0 if ok else 1)
+          PY
+      - name: App object probe
+        run: |
+          python - << 'PY'
+          import rag_mcp_server
+          assert hasattr(rag_mcp_server, "app"), "FastAPI app not found"
+          print("FastAPI app present ✅")
+          PY

@@ -1,0 +1,32 @@
+
+name: Release ZIP
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*.*.*'
+      - 'v*.*'
+permissions:
+  contents: write
+jobs:
+  build-zip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Create ZIP
+        run: |
+          zip -r 2ndBrain_RAG.zip . -x '*.git*' '*.DS_Store' '.venv/*' '__pycache__/*' '*.pyc' '*.pyo' '.ruff_cache/*'
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: 2ndBrain_RAG.zip
+          path: 2ndBrain_RAG.zip
+          if-no-files-found: error
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: 2ndBrain_RAG.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

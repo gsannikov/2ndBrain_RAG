@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+langchain
+chromadb
+sentence-transformers
+unstructured
+pdfminer.six
+watchdog
+requests
+ruff
