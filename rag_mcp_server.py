@@ -4,8 +4,8 @@ import logging
 from threading import Thread, RLock
 from fastapi import FastAPI, Query, Depends, HTTPException, Header
 from pydantic import BaseModel, Field
-from langchain.vectorstores import Chroma
-from langchain.embeddings import HuggingFaceEmbeddings
+from langchain_community.vectorstores import Chroma
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from utils.loader import load_documents
 from utils.embedder import upsert_documents, reset_index
 from utils.watcher import start_watcher
