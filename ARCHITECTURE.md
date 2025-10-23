@@ -4,29 +4,29 @@
 
 ### System Boundaries
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                      2ndBrain_RAG System                        │
-│                                                                 │
-│  ┌────────────────────────────────────────────────────────┐   │
-│  │              API Layer (FastAPI)                       │   │
-│  │  /status  /ingest  /search  /chat                      │   │
-│  └─────┬──────────────────────────────────┬───────────────┘   │
-│        │                                  │                   │
+┌──────────────────────────────────────────────────────────────┐
+│                      2ndBrain_RAG System                     │
+│                                                              │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │              API Layer (FastAPI)                       │  │
+│  │  /status  /ingest  /search  /chat                      │  │
+│  └─────┬──────────────────────────────────┬───────────────┘  │
+│        │                                  │                  │
 │  ┌─────▼──────────────────┐    ┌──────────▼──────────────┐   │
 │  │  Document Processing   │    │  Vector Storage Layer   │   │
 │  │  • Load Files          │    │  • ChromaDB Vector DB   │   │
 │  │  • Parse Content       │    │  • Persistence Manager  │   │
 │  │  • Chunk Text          │    │  • Similarity Search    │   │
 │  └────────────────────────┘    └─────────────────────────┘   │
-│                                                                 │
-│  ┌────────────────────────────────────────────────────────┐   │
-│  │         Integration Layer                              │   │
-│  │  • Embedding Generation (sentence-transformers)        │   │
-│  │  • LLM Integration (Ollama)                            │   │
-│  │  • File System Monitoring (Watchdog)                  │   │
-│  └────────────────────────────────────────────────────────┘   │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
+│                                                              │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │         Integration Layer                              │  │
+│  │  • Embedding Generation (sentence-transformers)        │  │
+│  │  • LLM Integration (Ollama)                            │  │
+│  │  • File System Monitoring (Watchdog)                   │  │
+│  └────────────────────────────────────────────────────────┘  │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
 
 External Dependencies:
   • Ollama Service (localhost:11434)

@@ -1,5 +1,5 @@
 
-# 🧠 2ndBrain_RAG (with Ollama chat)
+# 🧠 2ndBrain_RAG (+Local Ollama chat)
 
 Local Retrieval-Augmented search with:
 - Persistent ChromaDB
