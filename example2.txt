@@ -1,1 +1,0 @@
-This is an example RAG input document.\n

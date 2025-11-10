@@ -1,50 +1,59 @@
+# Local RAG + MCP + OCR (MacBook Air M‑series)
 
-# 🧠 2ndBrain_RAG (+Local Ollama chat)
+Local-first retrieval over a mirrored folder of PDFs and documents. Includes a Model Context Protocol (MCP) server that Claude Desktop/Claude Code can call. Watches the folder, indexes changes, performs OCR for scanned PDFs/images, and returns passages with citations.
 
-Local Retrieval-Augmented search with:
-- Persistent ChromaDB
-- Auto reindex on file changes (watchdog)
-- Ollama-powered **/chat** endpoint (default model: `llama3`)
-- MCP-ready FastAPI server
-- macOS LaunchAgent autostart via installer script
+## Features
+- File watcher for create/modify/delete.
+- Text extraction for PDF/Docx/PPTX/XLSX/Markdown/TXT.
+- OCR: Surya by default (CPU), PaddleOCR optional, DeepSeek-OCR optional.
+- Embeddings: `sentence-transformers/all-MiniLM-L6-v2` (CPU/MPS).
+- Vector store: Chroma persistent.
+- MCP tools: `rag.search`, `rag.get`, `rag.reindex`, `rag.stats`, `rag.invalidate`.
+
+## Requirements
+- macOS on Apple Silicon. Python 3.11+.
+- Homebrew: `brew install poppler libmagic`.
+- Claude Desktop or Claude Code (installed already).
 
 ## Install
 ```bash
-unzip 2ndBrain_RAG_ollama.zip -d ~/
-cd ~/2ndBrain_RAG
-bash scripts/install.sh
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+# edit .env -> set ROOT_DIR to your mirrored folder
 ```
-
-Ensure **Ollama** is installed and running:
-- Install: https://ollama.com
-- Pull model: `ollama pull llama3` (or set `export OLLAMA_MODEL=mistral` and pull it)
 
 ## Run
 ```bash
-# manual
 source .venv/bin/activate
-uvicorn rag_mcp_server:app --host 0.0.0.0 --port 8000
-# or wait for LaunchAgent autostart on reboot/login
+python mcp_server.py
 ```
 
-## Endpoints
-- `GET /status`
-- `POST /ingest?full_rebuild=true|false`
-- `GET /search?q=...&k=5`
-- `POST /chat` body:
-  ```json
-  { "query": "What's in the standard?", "k": 5 }
-  ```
-
-## Claude Desktop (MCP)
-Edit `~/.mcp/config.json`:
+## Connect to Claude
+Create or edit your Claude MCP config and add this server:
 ```json
 {
-  "servers": {
+  "mcpServers": {
     "local-rag": {
       "command": "python",
-      "args": ["/Users/YOUR_USER/2ndBrain_RAG/rag_mcp_server.py"]
+      "args": ["-u", "mcp_server.py"],
+      "env": { "PYTHONUNBUFFERED": "1" }
     }
   }
 }
 ```
+Place it at the location Claude Desktop/Claude Code expects, or merge it into an existing file. Then restart Claude.
+
+## Usage examples (inside Claude)
+- `rag.stats` → index stats.
+- `rag.search { "query": "invoice policy", "k": 6 }` → top passages with paths and offsets.
+- `rag.get { "path": "/path/doc.pdf", "start": 1234, "end": 2100 }` → source window.
+- After edits: `rag.reindex` or `rag.reindex { "paths": ["/path/file.pdf"] }`.
+
+## .env
+See `.env.example`. Default OCR engine is Surya for laptops. DeepSeek-OCR is optional.
+
+## Notes
+- Default DPI 200 for OCR to reduce heat. Re‑OCR specific pages at 300 only if needed.
+- For corpora > ~5–10 GB consider Qdrant and hybrid BM25 + vectors.
