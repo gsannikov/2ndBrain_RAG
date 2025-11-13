@@ -30,14 +30,15 @@ jobs:
           python - << 'PY'
           import compileall, sys
           import importlib
-          importlib.import_module("rag_mcp_server")
+          importlib.import_module("mcp_server")
           ok = compileall.compile_dir('.', force=True, quiet=1)
           sys.exit(0 if ok else 1)
           PY
-      - name: App object probe
+      - name: MCP server probe
         run: |
           python - << 'PY'
-          import rag_mcp_server
-          assert hasattr(rag_mcp_server, "app"), "FastAPI app not found"
-          print("FastAPI app present ✅")
+          import mcp_server
+          assert hasattr(mcp_server, "server"), "MCP server not found"
+          assert hasattr(mcp_server, "run"), "run function not found"
+          print("MCP server present ✅")
           PY
