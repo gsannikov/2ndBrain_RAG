@@ -43,14 +43,21 @@ Thumbs.db
 # Project specific
 data/
 .chroma/
+.chromadb/
 data/.chroma/
 ssl/cert.pem
 ssl/key.pem
+state/
+*.db
 
 # Test coverage
 .coverage
+.coverage.*
 htmlcov/
 .pytest_cache/
+coverage.xml
+*.cover
+.hypothesis/
 
 # Logs
 *.log
