@@ -6,7 +6,7 @@ on:
   pull_request:
 jobs:
   test:
-    name: Python ${{ matrix.python-version }} • lint & smoke
+    name: Python ${{ matrix.python-version }} • lint, test & coverage
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -18,26 +18,38 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
-      - name: Install deps
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt || true
-          pip install ruff
-      - name: Lint
+          pip install -r requirements-test.txt
+      - name: Lint with ruff
         run: ruff check --output-format=github .
-      - name: Smoke test
+      - name: Run tests with pytest
+        run: |
+          pytest tests/ -v --cov=mcp_server --cov=ingest --cov-report=xml --cov-report=term-missing
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        if: matrix.python-version == '3.11'
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+      - name: Smoke test - module import
         run: |
           python - << 'PY'
           import compileall, sys
           import importlib
-          importlib.import_module("rag_mcp_server")
+          importlib.import_module("mcp_server")
           ok = compileall.compile_dir('.', force=True, quiet=1)
           sys.exit(0 if ok else 1)
           PY
-      - name: App object probe
+      - name: Smoke test - MCP server probe
         run: |
           python - << 'PY'
-          import rag_mcp_server
-          assert hasattr(rag_mcp_server, "app"), "FastAPI app not found"
-          print("FastAPI app present ✅")
+          import mcp_server
+          assert hasattr(mcp_server, "server"), "MCP server not found"
+          assert hasattr(mcp_server, "run"), "run function not found"
+          print("MCP server present ✅")
           PY
